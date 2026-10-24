@@ -1,13 +1,19 @@
 // Replace these clearly labeled placeholders with verified personal information.
 export const profile = {
-  name: 'RUBY JEAN B. SOLOMON', email: '', github: '', linkedin: '',
-  photo: '', resume: '', school: '[University name]', degree: 'Computer Science',
-  dates: '[Start year – expected graduation]', location: '[City, Country]',
+  name: 'RUBY JEAN B. SOLOMON', email: '', github: 'https://github.com/Andyyy28', linkedin: '',
+  photo: '', resume: '', school: 'University of Southern Mindanao', degree: 'Computer Science',
+  dates: 'Currently studying', location: 'Kabacan, Cotabato',
 };
 export const projects = [
-  {id:1,title:'Student dashboard',category:'Web apps',tone:'lavender',kind:'dashboard',description:'A sample space for organizing classes, tasks, and everyday student life.',tags:['React','TypeScript','Tailwind CSS'],detail:'Replace this example with a real project. Describe the problem, your role, key features, technical decisions, and what you learned.',github:'',demo:''},
-  {id:2,title:'Little moments',category:'UI / UX',tone:'pink',kind:'journal',description:'A sample journaling concept with a calmer, more intentional daily flow.',tags:['Figma','UI design','Prototyping'],detail:'Replace this example with your own design case study. Add your research, design process, accessibility considerations, and final outcomes.',github:'',demo:''},
-  {id:3,title:'Focus companion',category:'Tools',tone:'mint',kind:'timer',description:'A sample productivity tool for making room for focused work and breaks.',tags:['JavaScript','CSS','Local storage'],detail:'Replace this example with a real tool you built. Explain its functionality, implementation, testing, and any limitations.',github:'',demo:''},
+  {id:1,title:'AgriPresyo',category:'Agriculture',tone:'mint',image:'/projects/agripresyo.png',description:'A mobile-focused agricultural market app for browsing commodities, following price trends, and managing vendor inventory.',tags:['React','TypeScript','Tailwind CSS'],detail:'AgriPresyo brings agricultural market information into a mobile-focused interface. Its live experience introduces market updates to support farming decisions, with commodity browsing, price trends, and vendor inventory features. Explore the live app or browse the source on GitHub.',github:'https://github.com/Andyyy28/agripresyo-mobile',demo:'https://agripresyo-mobile.vercel.app/'},
+  {id:2,title:'Astraea Collection',category:'E-commerce',tone:'pink',image:'/projects/astraea.png',description:'An online storefront for handcrafted fuzzy wire flowers, with bouquet customization and order tracking.',tags:['React','JavaScript','Tailwind CSS'],detail:'Astraea Collection showcases handcrafted fuzzy wire bouquets. Visitors can browse the shop, customize a bouquet, explore other products, and track an order. The interface pairs a soft floral visual style with clear shopping and customization paths.',github:'https://github.com/Andyyy28/ASTRAEA',demo:'https://astraeacollection.vercel.app/'},
+];
+export const certificates = [
+ {id:'ibm-ai',title:'Artificial Intelligence Fundamentals',issuer:'IBM SkillsBuild',date:'February 19, 2026',type:'Certificate of completion',image:'/certificates/ibm-ai-fundamentals.jpg',description:'Completed the requirements for Artificial Intelligence Fundamentals.'},
+ {id:'cisco',title:'Introduction to Cybersecurity',issuer:'Cisco Networking Academy · University of Southern Mindanao',date:'March 20, 2026',type:'Certificate of completion',image:'/certificates/cisco-cybersecurity.jpg',description:'Completed the course offered by the University of Southern Mindanao through Cisco Networking Academy.'},
+ {id:'ai-workshop',title:'AI Seminar Workshop',issuer:'USMart Technology Business Incubator · USM',date:'February 12, 2025',type:'Certificate of participation',image:'/certificates/ai-seminar-workshop.jpg',description:'Participated in sessions on DICT’s support for the startup ecosystem and generative AI insights and practices, held via Zoom.'},
+ {id:'gemini',title:'Gemini Certified Educator',issuer:'Google for Education',date:'November 25, 2025',type:'Certification',image:'/certificates/gemini-educator.jpg',description:'Demonstrated the knowledge, skills, and basic competencies needed to use Google AI in education. Valid through November 25, 2028.'},
+ {id:'base',title:'Base Learn & Base Build',issuer:'Base Philippines · OpenxAI · Davao DeFi Community',date:'October 28, 2025',type:'Certificate of participation',image:'/certificates/base-learn-build.jpg',description:'Participated in Base Learn & Base Build at the University of Southern Mindanao, an initiative supporting the next generation of on-chain builders.'},
 ];
 export const technologies = [
  {name:'React',symbol:'⚛',category:'Frontend',color:'blue',description:'Component-based interfaces and reusable UI. Replace with your own experience and examples.'},
