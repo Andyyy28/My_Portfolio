@@ -1,6 +1,6 @@
 // Replace these clearly labeled placeholders with verified personal information.
 export const profile = {
-  name: 'RUBY JEAN B. SOLOMON', email: '', github: 'https://github.com/Andyyy28', linkedin: '',
+  name: 'RUBY JEAN B. SOLOMON', email: 'rjean4393@gmail.com', github: 'https://github.com/Andyyy28', linkedin: '',
   photo: '', resume: '', school: 'University of Southern Mindanao', degree: 'Computer Science',
   dates: 'Currently studying', location: 'Kabacan, Cotabato',
 };

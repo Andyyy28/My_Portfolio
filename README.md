@@ -18,7 +18,7 @@ Edit `src/content.ts` for the name, email, social URLs, education, projects, cer
 - Put a real portrait in `public/` and set `profile.photo` to its root-relative URL.
 - Put the real PDF résumé in `public/` and set `profile.resume` to its root-relative URL. Until supplied, the résumé button explains that it is unavailable.
 - Add real GitHub and demo URLs to each project. Missing links explain their status without navigating to fake destinations.
-- Add `profile.email` to enable an email-app draft. Until then, the form downloads a local text draft and explicitly does not send it. No form data is stored or sent to a server.
+- Contact is configured for `rjean4393@gmail.com`. The form validates the visitor's details and prepares a draft with a subject, message, name, and reply address. Visitors choose Gmail in a new tab or their default email app, review the draft, and click Send there. The website does not claim delivery or send email itself, and it does not store form data. To test actual receipt, send a message from another email account and check the receiving Gmail inbox (and spam folder).
 - The terminal supports `help`, `about`, `projects`, `skills`, `contact`, and `clear`. It does not execute arbitrary code.
 
 Accessibility includes keyboard focus styles, skip navigation, semantic sections, reduced-motion support, labeled form fields, live notices, and native modal focus containment/Escape handling.
