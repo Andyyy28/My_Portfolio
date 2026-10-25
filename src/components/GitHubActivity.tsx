@@ -1,44 +1,34 @@
-import {useEffect, useState} from 'react';
-import {Github, GitCommitHorizontal, RefreshCw, ArrowUpRight} from 'lucide-react';
+import {useEffect, useRef, useState, type CSSProperties} from 'react';
+import {Github, RefreshCw, ArrowUpRight} from 'lucide-react';
 import {profile} from '../content';
 
-type PublicEvent = {id:string;type:string;repo:{name:string};created_at:string;payload?:{action?:string;ref_type?:string}};
-const interval = 5 * 60 * 1000;
-const endpoint = 'https://api.github.com/users/Andyyy28/events/public?per_page=12';
-function eventLabel(event:PublicEvent){
- const action=event.payload?.action;
- switch(event.type){
-  case 'PushEvent': return 'Pushed code';
-  case 'CreateEvent': return `Created ${event.payload?.ref_type||'a Git reference'}`;
-  case 'DeleteEvent': return `Deleted ${event.payload?.ref_type||'a Git reference'}`;
-  case 'PullRequestEvent': return `${action||'Updated'} a pull request`;
-  case 'IssuesEvent': return `${action||'Updated'} an issue`;
-  case 'IssueCommentEvent': return 'Commented on an issue or pull request';
-  case 'WatchEvent': return 'Starred a repository';
-  case 'ForkEvent': return 'Forked a repository';
-  case 'ReleaseEvent': return 'Published a release';
-  case 'PublicEvent': return 'Made a repository public';
-  default:return event.type.replace(/Event$/,'').replace(/([a-z])([A-Z])/g,'$1 $2');
- }
+type Day = {date:string;count:number;level:number};
+type Calendar = {total:number;days:Day[];fetchedAt:string};
+const interval=5*60*1000;
+const dateOf=(day:Day)=>new Date(`${day.date}T00:00:00Z`);
+const describe=(day:Day)=>`${day.count===0?'No':day.count} contribution${day.count===1?'':'s'} on ${dateOf(day).toLocaleDateString(undefined,{month:'long',day:'numeric',year:'numeric',timeZone:'UTC'})}`;
+function isCalendar(value:unknown):value is Calendar {
+ const data=value as Calendar|null;
+ return !!data&&Number.isSafeInteger(data.total)&&data.total>=0&&Number.isFinite(Date.parse(data.fetchedAt))&&Array.isArray(data.days)&&data.days.length>=350&&data.days.length<=371&&data.days.every(d=>/^\d{4}-\d{2}-\d{2}$/.test(d.date)&&Number.isInteger(d.count)&&d.count>=0&&Number.isInteger(d.level)&&d.level>=0&&d.level<=4);
 }
+
 export function GitHubActivity(){
- const [events,setEvents]=useState<PublicEvent[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState(''),[updated,setUpdated]=useState<Date|null>(null),[request,setRequest]=useState(0);
+ const [calendar,setCalendar]=useState<Calendar|null>(null),[loading,setLoading]=useState(true),[error,setError]=useState(''),[request,setRequest]=useState(0),[selected,setSelected]=useState<Day|null>(null),[focusIndex,setFocusIndex]=useState(0);
+ const cells=useRef<(HTMLButtonElement|null)[]>([]);
  useEffect(()=>{
-  let controller:AbortController|undefined;
-  let disposed=false, busy=false;
+  let controller:AbortController|undefined, disposed=false, busy=false;
   async function refresh(force=false){
    if(busy||(!force&&document.hidden))return;
    busy=true;setLoading(true);setError('');
    const activeController=new AbortController();controller=activeController;
    const timeout=setTimeout(()=>activeController.abort(),15000);
    try{
-    const response=await fetch(endpoint,{signal:activeController.signal,headers:{Accept:'application/vnd.github+json'}});
-    if(!response.ok)throw new Error(response.status===403||response.status===429?'GitHub’s public API limit was reached. Please try again later.':'GitHub activity is temporarily unavailable. Please try again.');
+    const response=await fetch('/api/github-contributions',{signal:activeController.signal});
+    if(!response.ok)throw new Error('The contribution calendar is temporarily unavailable. Please retry or view it on GitHub.');
     const result:unknown=await response.json();
-    if(!Array.isArray(result))throw new Error('GitHub returned an unexpected response. Please try again.');
-    const valid=result.filter((e):e is PublicEvent=>typeof e?.id==='string'&&typeof e?.type==='string'&&typeof e?.repo?.name==='string'&&/^[\w.-]+\/[\w.-]+$/.test(e.repo.name)&&typeof e?.created_at==='string'&&Number.isFinite(Date.parse(e.created_at)));
-    if(!disposed&&!activeController.signal.aborted){setEvents(valid.slice(0,6));setUpdated(new Date())}
-   }catch(e){if(!disposed)setError(activeController.signal.aborted?'The request timed out. Please try again.':e instanceof Error?e.message:'Could not load activity.');}
+    if(!isCalendar(result))throw new Error('The contribution data could not be verified. Please view the calendar on GitHub.');
+    if(!disposed){setCalendar(result);setSelected(null)}
+   }catch(e){if(!disposed)setError(activeController.signal.aborted?'The request timed out. Please try again.':e instanceof Error?e.message:'Could not load contributions.');}
    finally{clearTimeout(timeout);busy=false;if(!disposed)setLoading(false)}
   }
   void refresh(true);
@@ -47,11 +37,26 @@ export function GitHubActivity(){
   document.addEventListener('visibilitychange',onVisible);
   return()=>{disposed=true;clearInterval(timer);controller?.abort();document.removeEventListener('visibilitychange',onVisible)};
  },[request]);
+ const offset=calendar?dateOf(calendar.days[0]).getUTCDay():0;
+ const weeks=calendar?Math.ceil((calendar.days.length+offset)/7):53;
+ const months=calendar?.days.flatMap((day,i)=>i===0||dateOf(day).getUTCDate()===1?[{label:dateOf(day).toLocaleDateString('en',{month:'short',timeZone:'UTC'}),column:Math.floor((i+offset)/7)+1}]:[])??[];
  return <div className="github-activity raised" aria-labelledby="github-title">
-  <div className="activity-header"><div><p className="eyebrow"><Github size={14}/> BUILDING IN THE OPEN</p><h3 id="github-title">Live GitHub activity</h3><a href={profile.github} target="_blank" rel="noreferrer">@Andyyy28 <ArrowUpRight size={14}/></a></div><button className="button raised" disabled={loading} onClick={()=>setRequest(n=>n+1)}><RefreshCw size={15} className={loading?'refreshing':''}/>{loading?'Loading…':'Refresh'}</button></div>
-  <p className="activity-status" role="status">{error||(!updated?'Loading public activity…':`Last checked ${updated.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}. ${loading?'Refreshing…':''}`)}{error&&updated?' Showing the last successfully loaded activity.':''}</p>
-  {!loading&&!error&&events.length===0&&<p className="activity-empty">No recent public events are available. Visit GitHub to explore my repositories.</p>}
-  <ul className="activity-list">{events.map(event=><li key={event.id}><span className="activity-icon"><GitCommitHorizontal size={18}/></span><div><span>{eventLabel(event)}</span><a href={`https://github.com/${event.repo.name}`} target="_blank" rel="noreferrer">{event.repo.name}<ArrowUpRight size={12}/></a></div><time dateTime={event.created_at}>{new Date(event.created_at).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})}</time></li>)}</ul>
-  <div className="activity-footer"><p>Public events only · Refreshes every 5 minutes while this page is visible.<br/>GitHub may delay events; this is not a contribution count.</p><a className="small-link" href={profile.github} target="_blank" rel="noreferrer">View GitHub <ArrowUpRight size={14}/></a></div>
+  <div className="activity-header"><div><p className="eyebrow"><Github size={14}/> BUILDING IN THE OPEN</p><h3 id="github-title">GitHub contributions</h3><a href={profile.github} target="_blank" rel="noreferrer">@Andyyy28 <ArrowUpRight size={14}/></a></div><button className="button raised" disabled={loading} onClick={()=>setRequest(n=>n+1)}><RefreshCw size={15} className={loading?'refreshing':''}/>{loading?'Loading…':'Refresh'}</button></div>
+  <p className="activity-status" role="status">{error||(!calendar?'Loading GitHub’s contribution calendar…':`Updated ${new Date(calendar.fetchedAt).toLocaleString()}. ${loading?'Refreshing…':''}`)}{error&&calendar?' Showing the last successfully loaded calendar.':''}</p>
+  {calendar&&<>
+   <p className="contribution-total"><strong>{calendar.total.toLocaleString()}</strong> contributions in the last year</p>
+   <div className="calendar-scroll" role="region" aria-label="GitHub contribution calendar. Scroll horizontally on small screens." tabIndex={0}>
+    <div className="contribution-calendar" style={{'--weeks':weeks} as CSSProperties}>
+     <div className="calendar-months" aria-hidden="true">{months.filter((month,i)=>i===months.length-1||months[i+1].column-month.column>1).map((month,i)=><span key={i} style={{gridColumn:month.column}}>{month.label}</span>)}</div>
+     <div className="calendar-weekdays" aria-hidden="true"><span style={{gridRow:2}}>Mon</span><span style={{gridRow:4}}>Wed</span><span style={{gridRow:6}}>Fri</span></div>
+     <div className="calendar-days" aria-label="Daily contributions. Use arrow keys to move by day or week.">{calendar.days.map((day,i)=><button key={day.date} ref={element=>{cells.current[i]=element}} type="button" tabIndex={focusIndex===i?0:-1} className={`contribution-cell level-${day.level}`} style={{gridColumn:Math.floor((i+offset)/7)+1,gridRow:(i+offset)%7+1}} title={describe(day)} aria-label={describe(day)} onMouseEnter={()=>setSelected(day)} onFocus={()=>{setSelected(day);setFocusIndex(i)}} onClick={()=>{setSelected(day);setFocusIndex(i)}} onKeyDown={event=>{
+      const moves:Record<string,number>={ArrowLeft:-7,ArrowRight:7,ArrowUp:-1,ArrowDown:1,Home:-i,End:calendar.days.length-1-i};
+      if(event.key in moves){event.preventDefault();const next=Math.max(0,Math.min(calendar.days.length-1,i+moves[event.key]));setFocusIndex(next);cells.current[next]?.focus()}
+     }}/>)}</div>
+    </div>
+   </div>
+   <div className="calendar-bottom"><p className="calendar-detail" aria-live="polite">{selected?describe(selected):'Hover, focus, or tap a square to explore a day.'}</p><div className="calendar-legend" aria-label="Contribution intensity from less to more"><span>Less</span>{[0,1,2,3,4].map(level=><i key={level} className={`level-${level}`} aria-hidden="true"/>)}<span>More</span></div></div>
+  </>}
+  <div className="activity-footer"><p>From GitHub’s public contribution calendar · Refreshes every 5 minutes while visible.<br/>GitHub may take time to count new contributions.</p><a className="small-link" href={`${profile.github}?tab=overview`} target="_blank" rel="noreferrer">View on GitHub <ArrowUpRight size={14}/></a></div>
  </div>
 }

@@ -1,6 +1,6 @@
 # Ruby Jean B. Solomon — Portfolio
 
-Responsive React + TypeScript + Tailwind CSS portfolio, with Lucide icons and Motion. No backend is needed.
+Responsive React + TypeScript + Tailwind CSS portfolio, with Lucide icons and Motion. One small, token-free Vercel Function retrieves the public GitHub contribution calendar; no database is needed.
 
 ## Run
 
@@ -25,6 +25,10 @@ Accessibility includes keyboard focus styles, skip navigation, semantic sections
 
 ## GitHub activity and certificates
 
-`src/components/GitHubActivity.tsx` reads the public GitHub Events API for `Andyyy28`, with no token or backend. It loads on mount, refreshes every five minutes while visible, and supports manual refresh. Public event availability and latency are controlled by GitHub; the feed is not a contribution graph. Loading, empty, timeout, rate-limit, and network-error states are handled. On refresh errors, previously fetched events remain visible and are identified as older results.
+`src/components/GitHubActivity.tsx` displays GitHub's rolling yearly contribution calendar: daily squares, month and weekday labels, exact daily counts, GitHub intensity levels, and the yearly total. Hover, tap, or focus a square for details; use arrow keys, Home, and End to navigate. Small screens can scroll the calendar horizontally.
+
+`api/github-contributions.mjs` fetches the public calendar for `Andyyy28` directly from GitHub through `server/contributions.mjs`, without tokens. Vercel caches successful responses for five minutes (with up to ten minutes of stale-while-revalidate). The UI refreshes every five minutes while visible and supports manual refresh. The data timestamp is always shown; a refresh can still return cached data. GitHub controls contribution inclusion and counting delays. This uses public HTML rather than the Events API; if GitHub changes its markup, parsing fails explicitly instead of inventing an empty graph. No private repository details are fetched.
+
+The same handler runs in `npm run dev` through a Vite development middleware. Run parser/error tests with `node --test tests/contributions.test.mjs`. Production needs Vercel Functions (a static-only host cannot serve this endpoint).
 
 Certificate originals are in `public/certificates/`. The gallery provides an accessible modal, full-size viewing, and downloads. Project previews in `public/projects/` are screenshots of the supplied live sites.
